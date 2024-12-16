@@ -17,14 +17,18 @@ import javax.servlet.Servlet;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 @Component(service = Servlet.class,
         property = {
-                Constants.SERVICE_DESCRIPTION + "=Fruit Management Servlet",
+                Constants.SERVICE_DESCRIPTION + "=Fruit Management Servlet with Exact Match and Update",
                 "sling.servlet.methods=" + HttpConstants.METHOD_GET + "," + HttpConstants.METHOD_POST,
                 "sling.servlet.paths=" + "/bin/fruitmanager"
         })
-public class FruitManagementServlet extends SlingAllMethodsServlet {
+public class FruitManagerServlet extends SlingAllMethodsServlet {
+
+    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     @Override
     protected void doGet(SlingHttpServletRequest request, SlingHttpServletResponse response) {
@@ -64,8 +68,8 @@ public class FruitManagementServlet extends SlingAllMethodsServlet {
             String jsonContent = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
             JsonObject jsonObject = JsonParser.parseString(jsonContent).getAsJsonObject();
 
-            boolean isPresent = jsonObject.keySet().stream()
-                    .anyMatch(key -> key.contains(fruitToCheck));
+            // Check for exact match
+            boolean isPresent = jsonObject.has(fruitToCheck);
 
             response.setContentType("application/json");
             JsonObject jsonResponse = new JsonObject();
@@ -85,11 +89,10 @@ public class FruitManagementServlet extends SlingAllMethodsServlet {
     private void handlePostRequest(SlingHttpServletRequest request, SlingHttpServletResponse response) {
         try {
             String key = request.getParameter("key");
-            String value = request.getParameter("value");
-
-            if (key == null || value == null || key.isEmpty() || value.isEmpty()) {
+            String user = request.getUserPrincipal().getName(); // Get logged-in user
+            if (key == null || key.isEmpty()) {
                 response.setStatus(SlingHttpServletResponse.SC_BAD_REQUEST);
-                response.getWriter().write("Both 'key' and 'value' parameters are required.");
+                response.getWriter().write("The 'key' parameter is required.");
                 return;
             }
 
@@ -112,8 +115,11 @@ public class FruitManagementServlet extends SlingAllMethodsServlet {
             String jsonContent = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
             JsonObject jsonObject = JsonParser.parseString(jsonContent).getAsJsonObject();
 
-            // Add or update the key-value pair
-            jsonObject.addProperty(key, value);
+            // Update the JSON structure with nested objects
+            JsonObject valueObject = new JsonObject();
+            valueObject.addProperty("time", DATE_FORMAT.format(new Date())); // Current timestamp
+            valueObject.addProperty("by", user); // Logged-in user
+            jsonObject.add(key, valueObject);
 
             // Save the updated JSON back to the DAM
             String updatedJson = jsonObject.toString();

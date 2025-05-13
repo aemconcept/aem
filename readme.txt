@@ -36,3 +36,17 @@ withDomains.sort((a, b) => {
 const sortedEmails = withDomains.map(pair => pair[0]);
 
 console.log(sortedEmails);
+
+
+<style>
+th {
+    background-color: white;
+    /* top: calc(100% - 0.5rem); */
+    bottom: calc(100% - 0.5rem);
+    left: 0;
+    max-width: fit-content;
+    /* width: 100%; */
+    position: absolute;
+    z-index: 2;
+    padding: 0 0.5rem;
+}

@@ -10,7 +10,8 @@ console.log(c); // Output: [1, 3, 5]
 
 
 const emails = [
-  "john@example.com",
+  "jo2hn@google.com", "joh23n@google.com", "jo24hn@google.com", 
+  "john@google.com", 
   "alice@test.com",
   "bob@example.org",
   "carol@sample.com"
@@ -19,8 +20,17 @@ const emails = [
 // Preprocess into [email, domain] pairs
 const withDomains = emails.map(email => [email, email.split("@")[1]]);
 
-// Sort by domain
-withDomains.sort((a, b) => a[1].localeCompare(b[1]));
+// Sort with priority: google.com domains at top, then alphabetically
+withDomains.sort((a, b) => {
+  const domainA = a[1];
+  const domainB = b[1];
+
+  if (domainA === 'google.com' && domainB !== 'google.com') return -1;
+  if (domainB === 'google.com' && domainA !== 'google.com') return 1;
+  
+  // Normal alphabetical sort
+  return domainA.localeCompare(domainB);
+});
 
 // Extract sorted emails
 const sortedEmails = withDomains.map(pair => pair[0]);

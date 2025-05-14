@@ -107,3 +107,11 @@ public class MyServlet extends SlingAllMethodsServlet {
     }
 }
 
+ObjectMapper objectMapper = new ObjectMapper();
+List<Person> personList = new ArrayList<>();
+personList.add(new Person(1, "John"));
+personList.add(new Person(2, "Alice"));
+
+String jsonBody = objectMapper.writeValueAsString(personList);
+
+

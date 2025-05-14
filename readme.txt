@@ -50,3 +50,60 @@ th {
     z-index: 2;
     padding: 0 0.5rem;
 }
+
+
+const dataList = [
+  { id: 1, name: "John" },
+  { id: 2, name: "Alice" },
+];
+
+fetch("/bin/myservlet", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify(dataList)
+})
+.then(res => res.json())
+.then(data => console.log("Success:", data))
+.catch(err => console.error("Error:", err));
+
+@SlingServlet(paths = "/bin/myservlet", methods = "POST")
+public class MyServlet extends SlingAllMethodsServlet {
+
+    private static final ObjectMapper mapper = new ObjectMapper();
+
+    @Override
+    protected void doPost(SlingHttpServletRequest request, SlingHttpServletResponse response)
+            throws ServletException, IOException {
+
+        // Parse request body to list of MyObject
+        List<MyObject> objects = mapper.readValue(
+            request.getInputStream(),
+            new TypeReference<List<MyObject>>() {}
+        );
+
+        // Example: log or process data
+        for (MyObject obj : objects) {
+            log.info("Received: id={}, name={}", obj.getId(), obj.getName());
+        }
+
+        // Send JSON response
+        response.setContentType("application/json");
+        response.getWriter().write("{\"status\": \"ok\"}");
+    }
+
+    // Define your object model
+    public static class MyObject {
+        private int id;
+        private String name;
+
+        // Getters and setters
+        public int getId() { return id; }
+        public void setId(int id) { this.id = id; }
+
+        public String getName() { return name; }
+        public void setName(String name) { this.name = name; }
+    }
+}
+
